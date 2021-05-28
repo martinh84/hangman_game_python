@@ -1,0 +1,205 @@
+"""
+This program is a game.  The program randomly selects a word from the Lexicon file, then 
+displays to the user the _ character for every letter in the word. The user has 8 guesses to 
+guess all the letters in the word. Non-alpha characters count as an incorrect guess, 
+repeat guesses do not count as an incorrect guess.
+The game is over if either the word is correctly guessed, or the user runs out of guesses.
+"""
+
+
+import random
+
+
+LEXICON_FILE = "Lexicon.txt"    # File to read word list from
+INITIAL_GUESSES = 8             # Initial number of guesses player starts with
+
+
+def play_game(secret_word):
+    """
+    input: the user inputs various characters, trying to guess the secret word
+    output: the program will update the hidden word with each correct guess, or reduce the number of guesses
+    left if it is an incorrect guess. 
+    Append the guessed_list with each guess to notify the user if they have already used that character.
+    """
+    #boolean to show the game is not won 
+    guessed = False
+    #number of guesses from global variable
+    guesses_left = INITIAL_GUESSES
+    #list to collect letters that have been selected so far by the user
+    guessed_letters = []
+    #variable to 'hide' the letters from the user
+    hidden_word = ("_" * len(secret_word))
+
+    #conditional to keep game going 
+    while not guessed and guesses_left > 0:
+        #to tidy up the grammar, changed the output if down to 1 guess
+        if guesses_left == 1:
+            print("\nJust 1 guess left!")
+        else:
+            print("\nYou have {} guesses".format(guesses_left))
+        
+        print("The word looks like this: ", hidden_word)
+        guess = input("Type a single letter here, then press enter: ").upper()
+
+        #to ensure entry is a member of the alphabet (a guess is deducted if not)
+        if guess.isalpha():
+            if guess in guessed_letters:
+                print("You have already tried {}, try again".format(guess))
+            if len(guess) != 1:
+                print("A guess should only be a single character.")
+            elif guess not in secret_word and guess not in guessed_letters:
+                print("The letter {} is not in the word".format(guess))
+                guessed_letters.append(guess)
+                guesses_left -= 1
+                #print display of the hangman, depending on the numbe rof guesses left
+                print(display_hangman(guesses_left))
+            else:
+                guessed_letters.append(guess)
+                #change str to list to get indices
+                hidden_word_list = list(hidden_word)
+                #enumerate to get index position of correct guess in the word, then update the hidden_word string
+                get_index = [i for i, letter in enumerate(secret_word) if letter == guess]
+                for index in get_index:
+                    hidden_word_list[index] = guess
+                hidden_word =  "".join(hidden_word_list)
+                #condition to see if the game has been won!
+                if hidden_word == secret_word:
+                    guessed == True
+                    print("**"+ secret_word + "**")
+                    print("Congratulations, you guessed it!")
+                    break
+        else:
+            print("Not a valid guess")
+            guesses_left -= 1
+            print(display_hangman(guesses_left))
+        if guesses_left == 0:
+            print("\nSorry, you lost. The secret word was: {}. Game over!".format(secret_word))
+            break
+        
+
+def get_word():
+    """
+    This function returns a secret word that the player is trying
+    to guess in the game.  words are split into a list, then random is used to select which word
+    in the file, using the length of the list to include all words in the file
+    """
+    with open(LEXICON_FILE) as word_file:
+        contents = word_file.read().split()
+        random_choice = random.randint(0,len(contents)-1)
+        secret_word = contents[random_choice]
+        return secret_word
+
+def display_hangman(guesses_left):
+    """
+    This list displays a basic 'view' of the hangman's predicament.  Each list index relates to the number of guesses
+    the user has left which is shown when an incorrect guess is given. Once the user has 0 guesses, the list index [0] is 
+    shown - which is a fully hanged man.
+    Input: number of guesses
+    Output: list of basic images relating to the hangman's predicament
+    """
+    hangman_stage = [ """
+    ---------
+    |       |
+    |       O
+    |      \|/
+    |       |
+    |      / \\
+    |        
+    |
+     ____________
+    """,
+    """
+    ---------
+    |       |
+    |       O
+    |      \|/
+    |       |
+    |      / 
+    |        
+    |
+     ____________
+    """,
+    """
+    ---------
+    |       |
+    |       O
+    |      \|/
+    |       |
+    |       
+    |        
+    |
+     ____________
+      """,
+    """
+    ---------
+    |       |
+    |       O
+    |      \|/
+    |       
+    |       
+    |        
+    |
+     ____________
+      """,
+    """
+    ---------
+    |       |
+    |       O
+    |      \|
+    |       
+    |       
+    |        
+    |
+     ____________
+      """,
+    """
+    ---------
+    |       |
+    |       O
+    |      
+    |       
+    |       
+    |        
+    |
+     ____________
+       """,
+    """
+    ---------
+    |       |
+    |       
+    |      
+    |       
+    |       
+    |        
+    |
+     ____________
+       """,
+    """
+    ---------
+    |       
+    |       
+    |      
+    |       
+    |       
+    |        
+    |
+     ____________
+     """
+    ]
+    return hangman_stage[guesses_left]
+    
+    
+def main():
+    """
+    To play the game, we first select the secret word for the
+    player to guess and then play the game using that secret word.
+    """
+    print("Welcome to the game of Hangman!")
+    secret_word = get_word()
+    play_game(secret_word)
+
+
+# This provided line is required at the end of a Python file
+# to call the main() function.
+if __name__ == "__main__":
+    main()
